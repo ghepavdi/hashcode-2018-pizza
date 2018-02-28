@@ -8,9 +8,11 @@ punteggio totale: rows x cols
 slice: tupla (r_1, c_1, r_2, c_2) 
 """
 
+import sys
 import numpy as np
 
 from itertools import product
+from pprint import pprint
 
 def get_kernel_sizes(min_ingredients_per_slice, max_slice_dim):
     max_kernel_size = min_ingredients_per_slice + min_ingredients_per_slice
@@ -106,20 +108,34 @@ def final_score(FILE):
     starting_slices, occupied_matrix = find_starting_slices(pizza, starting_kernels, MIN_T)
     # pprint(starting_slices)
     score = calculate_score(starting_slices)
-    return score, MAX_SCORE
+    return score, MAX_SCORE, starting_slices
+
+def output(filename, slices):
+    with open(filename[:-3] + ".out", "w") as file:
+        file.write("{}\n".format(len(slices)))
+        for s in slices:
+            file.write("{} {} {} {}\n".format(s[0], s[1], s[2], s[3]))
 
 # dati gli slice iniziali espanderli finché si può lungo le righe e lungo le colonne
 
-FILES = 'small.in'
-FILEM = 'medium.in'
-FILEB = 'big.in'
+# FILEE = 'example.in'
+# FILES = 'small.in'
+# FILEM = 'medium.in'
+# FILEB = 'big.in'
 
-from pprint import pprint
+# s0, m0, slices_0 = final_score(FILEE)
+# s1, m1, slices_1 = final_score(FILES)
+# s2, m2, slices_2 = final_score(FILEM)
+# s3, m3, slices_3 = final_score(FILEB)
+# MAX_SCORE = m0 + m1 + m2 + m3
+# score = s0 + s1 + s2 + s3
+# print('max score {}, score {} (percentage {})'.format(MAX_SCORE, score, score * 100. / MAX_SCORE))
+# output(FILEE, slices_0)
+# output(FILES, slices_1)
+# output(FILEM, slices_2)
+# output(FILEB, slices_3)
 
-s1, m1 = final_score(FILES)
-s2, m2 = final_score(FILEM)
-s3, m3 = final_score(FILEB)
-MAX_SCORE = m1 + m2 + m3
-score = s1 + s2 + s3
-print('max score {}, score {} (percentage {})'.format(MAX_SCORE, score, score * 100. / MAX_SCORE))
-
+filename = sys.argv[1]
+score, max_score, slices = final_score(filename)
+print('max score {}, score {} (percentage {})'.format(max_score, score, score * 100. / max_score))
+output(filename, slices)
