@@ -30,9 +30,9 @@ def possible_kernels(filename):
     elif filename == "small.in":
         return [(1, 2), (2, 1), (2, 2), (1, 3), (3, 1), (1, 4), (4, 1), (1, 5), (5, 1)]
     elif filename == "medium.in":
-        return [(4, 2), (2, 4), (1, 8), (8, 1), (3, 3), (9, 1), (1, 9), (1, 10), (10, 1), (1, 11), (11, 1), (12, 1), (12, 1)]
+        return [(12, 1), (12, 1), (1, 11), (11, 1), (1, 10), (10, 1), (9, 1), (1, 9), (4, 2), (2, 4), (1, 8), (8, 1), (3, 3)]
     elif filename == "big.in":
-        return [(1, 14), (14, 1), (2, 7), (7, 2), (6, 2), (2, 6), (1, 12), (12, 1), (3, 4), (4, 3), (1, 13), (13, 1)]
+        return [(1, 14), (14, 1), (2, 7), (7, 2), (1, 13), (13, 1), (6, 2), (2, 6), (1, 12), (12, 1), (3, 4), (4, 3)]
 
 
 def parse_input_file(file_name):
@@ -77,12 +77,14 @@ def slice_is_not_taken(occupied_matrix, kernel, row, col):
     all_false = submatrix == False
     return all_false.all()
 
-def find_starting_slices(pizza, starting_kernels):
+def find_starting_slices(pizza, starting_kernels, MIN_T):
     starting_slices = []
     rows, cols = pizza.shape
     occupied_matrix = np.zeros(pizza.shape, dtype=bool)
-
+    index = 0
     for kernel in starting_kernels:
+        index += 1
+        print(str(index * 100 /len(starting_kernels)) + '%')
         for row, col in product(range(rows), range(cols)):
             if slice_is_not_taken(occupied_matrix, kernel, row, col):
                 if row + kernel[0] < rows and col + kernel[1] < cols:
@@ -93,22 +95,31 @@ def find_starting_slices(pizza, starting_kernels):
                     if one_num >= MIN_T and zero_num >= MIN_T:
                         starting_slices.append((row, col, row + kernel[0] - 1, col + kernel[1] - 1))
                         occupied_matrix[row:row + kernel[0], col:col + kernel[1]] = True
-                        #row += kernel[0]
-    return starting_slices
+    return starting_slices, occupied_matrix
 
-def output(filename, slices):
-    with open(filename[:-3] + ".out", "w") as file:
-        file.write("{}\n".format(len(slices)))
-        for s in slices:
-            file.write("{} {} {} {}\n".format(s[0], s[1], s[2], s[3]))
 
-FILE = 'example.in'
+def final_score(FILE):
+    pizza, MIN_T, MAX_SIZE = parse_input_file(FILE)
+    MAX_SCORE = pizza.shape[0] * pizza.shape[1]
+    starting_kernels = possible_kernels(FILE)
+    # starting_kernels = possible_kernels(FILE)
+    starting_slices, occupied_matrix = find_starting_slices(pizza, starting_kernels, MIN_T)
+    # pprint(starting_slices)
+    score = calculate_score(starting_slices)
+    return score, MAX_SCORE
 
-pizza, MIN_T, MAX_SIZE = parse_input_file(FILE)
-MAX_SCORE = pizza.shape[0] * pizza.shape[1]
-#starting_kernels = get_kernel_sizes(MIN_T, MAX_SIZE)
-starting_kernels = possible_kernels(FILE)
-starting_slices = find_starting_slices(pizza, starting_kernels)
-output(FILE, starting_slices)
-print(starting_slices)
-print('max score {}, score {}'.format(MAX_SCORE, calculate_score(starting_slices)))
+# dati gli slice iniziali espanderli finché si può lungo le righe e lungo le colonne
+
+FILES = 'small.in'
+FILEM = 'medium.in'
+FILEB = 'big.in'
+
+from pprint import pprint
+
+s1, m1 = final_score(FILES)
+s2, m2 = final_score(FILEM)
+s3, m3 = final_score(FILEB)
+MAX_SCORE = m1 + m2 + m3
+score = s1 + s2 + s3
+print('max score {}, score {} (percentage {})'.format(MAX_SCORE, score, score * 100. / MAX_SCORE))
+
