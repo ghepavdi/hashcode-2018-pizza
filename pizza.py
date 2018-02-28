@@ -73,7 +73,7 @@ def calculate_score(kernel_matrix):
 
 def slice_is_not_taken(occupied_matrix, kernel, row, col):
     kernel_row_size, kernel_col_size = kernel
-    submatrix = occupied_matrix[row:row + kernel_row_size][col:col + kernel_col_size]
+    submatrix = occupied_matrix[row:row + kernel_row_size, col:col + kernel_col_size]
     all_false = submatrix == False
     return all_false.all()
 
@@ -83,18 +83,17 @@ def find_starting_slices(pizza, starting_kernels):
     occupied_matrix = np.zeros(pizza.shape, dtype=bool)
 
     for kernel in starting_kernels:
-        for row in range(rows):
-            for col in range(cols):
-                if slice_is_not_taken(occupied_matrix, kernel, row, col):
-                    if row + kernel[0] < rows and col + kernel[1] < cols:
-                        # conta uno, sottrai al max e sai zero
-                        my_slice = pizza[row:row + kernel[0], col:col + kernel[1]]
-                        one_num = my_slice.sum()
-                        zero_num = (kernel[0] * kernel[1]) - one_num
-                        if one_num >= MIN_T and zero_num >= MIN_T:
-                            starting_slices.append((row, col, row + kernel[0] - 1, col + kernel[1] - 1))
-                            occupied_matrix[row:row + kernel[0], col:col + kernel[1]] = True
-                            #row += kernel[0]
+        for row, col in product(range(rows), range(cols)):
+            if slice_is_not_taken(occupied_matrix, kernel, row, col):
+                if row + kernel[0] < rows and col + kernel[1] < cols:
+                    # conta uno, sottrai al max e sai zero
+                    my_slice = pizza[row:row + kernel[0], col:col + kernel[1]]
+                    one_num = my_slice.sum()
+                    zero_num = (kernel[0] * kernel[1]) - one_num
+                    if one_num >= MIN_T and zero_num >= MIN_T:
+                        starting_slices.append((row, col, row + kernel[0] - 1, col + kernel[1] - 1))
+                        occupied_matrix[row:row + kernel[0], col:col + kernel[1]] = True
+                        #row += kernel[0]
     return starting_slices
 
 def output(filename, slices):
